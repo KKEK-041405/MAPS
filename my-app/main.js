@@ -3,35 +3,33 @@ import {OSM, Vector as VectorSource} from 'ol/source.js';
 import {Point} from 'ol/geom.js';
 import {Tile as TileLayer, Vector as VectorLayer} from 'ol/layer.js';
 import {useGeographic} from 'ol/proj.js';
-import Icon from 'ol/style/Icon';
 
 useGeographic();
 
-const place = [80, 16];
+const place = [-110, 45];
 
 const point = new Point(place);
 
-const layer1 = new TileLayer({
-  source: new OSM(),
-});
-const pp = new Feature(point);
-const layer2 = new VectorLayer({
-  source: new VectorSource({
-    features: pp,
-  }),
-  style: {
-    'circle-radius': 9,
-    'circle-fill-color': 'red',
-  },
-});
 const map = new Map({
-  
   target: 'map',
   view: new View({
     center: place,
     zoom: 8,
   }),
-  layers: [layer1],
+  layers: [
+    new TileLayer({
+      source: new OSM(),
+    }),
+    new VectorLayer({
+      source: new VectorSource({
+        features: [new Feature(point)],
+      }),
+      style: {
+        'circle-radius': 9,
+        'circle-fill-color': 'red',
+      },
+    }),
+  ],
 });
 
 const element = document.getElementById('popup');
@@ -46,19 +44,17 @@ function formatCoordinate(coordinate) {
   return `
     <table>
       <tbody>
-        <tr><th>lon</th><td>${coordinate[0].toFixed(9)}</td></tr>
-        <tr><th>lat</th><td>${coordinate[1].toFixed(9)}</td></tr>
+        <tr><th>lon</th><td>${coordinate[0].toFixed(2)}</td></tr>
+        <tr><th>lat</th><td>${coordinate[1].toFixed(2)}</td></tr>
       </tbody>
     </table>`;
 }
 
-const view = map.getView();
 const info = document.getElementById('info');
-const log = document.getElementById('log');
 map.on('moveend', function () {
+  const view = map.getView();
   const center = view.getCenter();
   info.innerHTML = formatCoordinate(center);
-  log.innerHTML = formatCoordinate(center);
 });
 
 let popover;
@@ -87,8 +83,28 @@ map.on('click', function (event) {
   });
   popover.show();
 });
-  
+
 map.on('pointermove', function (event) {
   const type = map.hasFeatureAtPixel(event.pixel) ? 'pointer' : 'inherit';
   map.getViewport().style.cursor = type;
 });
+
+
+
+
+// Create a map
+const man = new ol.Map({
+  target: 'map',
+  view: new ol.View({
+    center: [0, 0],
+    zoom: 2
+  })
+});
+
+// Add a marker in the center of the map
+const marker = new ol.Overlay({
+  position: map.getView().getCenter(),
+  positioning: 'center-center',
+  element: document.getElementById('marker')
+});
+map.addOverlay(marker);
